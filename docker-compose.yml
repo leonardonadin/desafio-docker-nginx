@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  db:
+    image: mysql
+    restart: always
+    env_file: ./.env
+    enviroment:
+      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: $MYSQL_DATABASE
+    posrts:
+      "$MYSQL_LOCAL_PORT:$MYSQL_DOCKER_PORT"
+    volumes:
+      db:/var/lib/mysql
+  node:
+    build:
+      context: ./app
+    ports:
+      "$NODE_LOCAL_PORT:$NODE_DOCKER_PORT"
+    env_file: ./.env
+    enviroment:
+      DB_HOST=db
+      DB_USER=$MYSQLDB_USER
+      DB_PASSWORD=$MYSQLDB_ROOT_PASSWORD
+      DB_NAME=$MYSQLDB_DATABASE
+      DB_PORT=$MYSQLDB_DOCKER_PORT
+    stdin_open: true
+    tty: true
+  nginx:
+    depends_on:
+      db
+      node
+    restart: always
+    build:
+      context: ./nginx
+    ports:
+      "80:80"
+volumes:
+  db
